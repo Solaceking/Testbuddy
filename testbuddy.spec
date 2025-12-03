@@ -55,9 +55,22 @@ hiddenimports = [
 
 # Collect data files (config templates, icons, etc.)
 datas = [
-    # Add any data files here if needed
-    # ('path/to/datafile', 'destination/folder'),
+    # Bundle Tesseract OCR
+    ('tesseract/tesseract.exe', 'tesseract'),
+    ('tesseract/tessdata', 'tesseract/tessdata'),
+    # Note: tesseract DLL files will be added dynamically if found
 ]
+
+# Check if tesseract directory exists and add DLL files
+tesseract_dir = Path('tesseract')
+if tesseract_dir.exists():
+    # Add all DLL files from tesseract directory
+    for dll_file in tesseract_dir.glob('*.dll'):
+        datas.append((str(dll_file), 'tesseract'))
+    print(f"✅ Found Tesseract bundle at: {tesseract_dir}")
+    print(f"   Added {len(list(tesseract_dir.glob('*.dll')))} DLL files")
+else:
+    print("⚠️  Warning: tesseract/ directory not found. Run copy_tesseract.bat first!")
 
 # Analysis: Find all imports and dependencies
 a = Analysis(

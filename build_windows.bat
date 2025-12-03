@@ -30,7 +30,7 @@ echo [1/5] Checking Python version...
 python --version
 
 echo.
-echo [2/5] Installing dependencies...
+echo [2/6] Installing dependencies...
 pip install -q -r requirements.txt
 if errorlevel 1 (
     echo ERROR: Failed to install dependencies
@@ -39,13 +39,43 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/5] Cleaning previous builds...
+echo [3/6] Checking for bundled Tesseract...
+if not exist tesseract\tesseract.exe (
+    echo.
+    echo ============================================================
+    echo WARNING: Tesseract not bundled yet!
+    echo ============================================================
+    echo.
+    echo TestBuddy requires Tesseract OCR to be bundled with the app.
+    echo Please run: copy_tesseract.bat
+    echo.
+    echo This will copy Tesseract from your system installation to
+    echo the tesseract\ folder for bundling.
+    echo.
+    echo After running copy_tesseract.bat, run this script again.
+    echo ============================================================
+    echo.
+    pause
+    exit /b 1
+) else (
+    echo Tesseract found at: tesseract\tesseract.exe
+    echo Checking tessdata...
+    if exist tesseract\tessdata\eng.traineddata (
+        echo   eng.traineddata: OK
+    ) else (
+        echo   WARNING: eng.traineddata missing!
+    )
+)
+
+echo.
+echo [4/6] Cleaning previous builds...
 if exist dist rmdir /s /q dist
 if exist build rmdir /s /q build
 
 echo.
-echo [4/5] Building TestBuddy.exe with PyInstaller...
+echo [5/6] Building TestBuddy.exe with PyInstaller...
 echo This may take 2-5 minutes...
+echo Bundling Tesseract OCR...
 pyinstaller testbuddy.spec
 if errorlevel 1 (
     echo ERROR: PyInstaller build failed
@@ -54,7 +84,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [5/5] Verifying output...
+echo [6/6] Verifying output...
 if exist dist\TestBuddy.exe (
     echo SUCCESS! TestBuddy.exe created in dist\ folder
     echo.

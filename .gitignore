@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec.bak
+
+# Logs
+*.log
+testbuddy_debug.log
+testbuddy_debug.log.*
+snapocr_debug.log
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App specific
+testbuddy.ini
+testbuddy_history.json
+crash_log.txt
+
+# Build artifacts
+dist/
+build/
+*.exe
+*.msi
+
+# Tesseract bundle (users must run copy_tesseract.bat)
+# The bundled Tesseract is ~80MB and should not be in Git
+tesseract/
+!tesseract/.gitkeep
+
+# Tessdata files (large)
+*.traineddata
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+debug_output.txt
+
+# Icon (if custom icon added)
+# icon.ico

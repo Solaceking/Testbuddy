@@ -62,28 +62,53 @@ class OCRWorkerFixed(QObject):
         # Check Tesseract binary
         tesseract_path = Path(self.config.tesseract_path)
         
-        # Try common Windows paths
+        # Get application directory (for bundled Tesseract)
+        if getattr(sys, 'frozen', False):
+            # Running as compiled executable
+            app_dir = Path(sys._MEIPASS)
+        else:
+            # Running as script
+            app_dir = Path(__file__).parent
+        
+        # Try multiple paths, prioritizing bundled version
         possible_paths = [
-            tesseract_path,
-            Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),
+            app_dir / "tesseract" / "tesseract.exe",  # Bundled with app
+            app_dir / ".." / "tesseract" / "tesseract.exe",  # One level up
+            tesseract_path,  # Config path
+            Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),  # System install
             Path(r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"),
             Path(r"C:\Tesseract-OCR\tesseract.exe"),
         ]
         
         tesseract_found = False
+        found_path = None
+        
         for path in possible_paths:
             if path.exists():
                 pytesseract.pytesseract.tesseract_cmd = str(path)
                 tesseract_found = True
-                self.logger.info("OCR", f"Tesseract found at: {path}")
+                found_path = path
+                
+                # Set TESSDATA_PREFIX if using bundled version
+                if "tesseract" in str(path).lower() and (app_dir in path.parents or app_dir == path.parent.parent):
+                    tessdata_dir = path.parent / "tessdata"
+                    if tessdata_dir.exists():
+                        os.environ['TESSDATA_PREFIX'] = str(tessdata_dir.parent)
+                        self.logger.info("OCR", f"Using bundled tessdata: {tessdata_dir}")
+                
+                self.logger.info("OCR", f"✅ Tesseract found at: {path}")
                 break
         
         if not tesseract_found:
             error_msg = (
                 "Tesseract OCR binary not found!\n\n"
-                "Please install Tesseract from:\n"
-                "https://github.com/UB-Mannheim/tesseract/wiki\n\n"
-                f"Expected location: {self.config.tesseract_path}\n\n"
+                "TestBuddy comes with bundled Tesseract, but it seems to be missing.\n\n"
+                "Please try:\n"
+                "1. Re-download/re-install TestBuddy\n"
+                "2. Or manually install Tesseract from:\n"
+                "   https://github.com/UB-Mannheim/tesseract/wiki\n\n"
+                f"Expected bundled location: {app_dir / 'tesseract' / 'tesseract.exe'}\n"
+                f"Or system install: C:\\Program Files\\Tesseract-OCR\\tesseract.exe\n\n"
                 "After installation, restart TestBuddy."
             )
             return False, error_msg
@@ -91,7 +116,8 @@ class OCRWorkerFixed(QObject):
         # Try to verify Tesseract works
         try:
             version = pytesseract.get_tesseract_version()
-            self.logger.info("OCR", f"Tesseract version: {version}")
+            self.logger.info("OCR", f"✅ Tesseract version: {version}")
+            self.logger.info("OCR", f"✅ Tesseract path: {found_path}")
             return True, ""
         except Exception as e:
             return False, f"Tesseract found but not working: {str(e)}"
