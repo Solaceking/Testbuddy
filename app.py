@@ -53,6 +53,7 @@ from export import ExportManager
 from undo_redo import UndoRedoManager
 from logger import get_logger
 from ocr_fixed import OCRWorkerFixed
+from log_viewer import CollapsibleLogViewer
 
 # Dependencies
 try:
@@ -652,11 +653,17 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("TestBuddy")
-        self.resize(1100, 720)
+        self.resize(1100, 750)  # Slightly taller for log viewer
 
-        # Central stacked widget
+        # Central widget with log viewer at bottom
+        central = QWidget()
+        central_layout = QVBoxLayout(central)
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.setSpacing(0)
+        
+        # Main content (stacked pages)
         self.stack = QStackedWidget()
-        self.setCentralWidget(self.stack)
+        central_layout.addWidget(self.stack, stretch=1)
 
         # Pages
         self.home_page = HomePage(self)
@@ -664,6 +671,12 @@ class MainWindow(QMainWindow):
 
         self.stack.addWidget(self.home_page)
         self.stack.addWidget(self.workbench)
+        
+        # Log viewer at bottom (collapsible)
+        self.log_viewer = CollapsibleLogViewer()
+        central_layout.addWidget(self.log_viewer)
+        
+        self.setCentralWidget(central)
 
         # OCR worker thread
         self.ocr_thread: Optional[QThread] = None
@@ -835,10 +848,15 @@ class MainWindow(QMainWindow):
 
     def on_ocr_finished(self, text: str, error: str) -> None:
         if error:
-            self.workbench.status_label.setText("OCR failed - see details")
+            self.workbench.status_label.setText("OCR failed - check Activity Log below")
             safe_write_log(fmt_log("ERROR", "OCR failed", error))
-            # Show detailed error message to user
-            QMessageBox.critical(self, "OCR Error", error)
+            
+            # Show error in log viewer (auto-expands)
+            self.log_viewer.show_error(error)
+            
+            # Also show popup for critical errors
+            QMessageBox.critical(self, "OCR Error", 
+                f"{error}\n\nDetailed logs are shown below. Click 'Copy All' to copy error details.")
             return
 
         cleaned = text.strip()
@@ -994,6 +1012,13 @@ class MainWindow(QMainWindow):
 
 def main() -> None:
     app = QApplication(sys.argv)
+    
+    # Initialize logger
+    logger = get_logger()
+    logger.info("APPLICATION", "TestBuddy starting", {
+        "version": "3.0",
+        "platform": platform.system()
+    })
     
     # Create main window first
     main_win = MainWindow()
