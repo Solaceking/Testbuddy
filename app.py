@@ -963,12 +963,17 @@ class MainWindow(QMainWindow):
 
 def main() -> None:
     app = QApplication(sys.argv)
+    
+    # Create main window first
+    main_win = MainWindow()
+    
+    # Show splash screen
     splash = SplashScreen(timeout_ms=900)
     splash.show()
-
-    main_win = MainWindow()
-    QTimer.singleShot(900, main_win.show)
-
+    
+    # Show main window after splash closes
+    QTimer.singleShot(950, main_win.show)  # Slightly longer to ensure splash closes first
+    
     sys.exit(app.exec())
 
 
