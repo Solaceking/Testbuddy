@@ -51,6 +51,8 @@ from config import ConfigManager
 from history import HistoryManager
 from export import ExportManager
 from undo_redo import UndoRedoManager
+from logger import get_logger
+from ocr_fixed import OCRWorkerFixed
 
 # Dependencies
 try:
@@ -516,20 +518,47 @@ class Workbench(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
 
-        # Toolbar
+        # PROMINENT CAPTURE BUTTON (Round, Blue, Large)
+        capture_layout = QHBoxLayout()
+        capture_layout.addStretch()
+        
+        self.btn_capture = QPushButton("CAPTURE SCREENSHOT")
+        self.btn_capture.setStyleSheet("""
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 35px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 20px 40px;
+                min-width: 300px;
+                min-height: 70px;
+            }
+            QPushButton:hover {
+                background-color: #0051D5;
+            }
+            QPushButton:pressed {
+                background-color: #004BB8;
+            }
+        """)
+        capture_layout.addWidget(self.btn_capture)
+        capture_layout.addStretch()
+        layout.addLayout(capture_layout)
+        layout.addSpacing(15)
+
+        # Regular Toolbar (without emojis)
         toolbar = QHBoxLayout()
-        self.btn_undo = QPushButton("↶ Undo")
-        self.btn_redo = QPushButton("↷ Redo")
-        self.btn_capture = QPushButton("📷 Capture")
-        self.btn_save = QPushButton("💾 Save")
-        self.btn_export = QPushButton("📤 Export")
-        self.btn_zoom_in = QPushButton("🔍+")
-        self.btn_zoom_out = QPushButton("🔍-")
-        self.btn_zoom_reset = QPushButton("↺ Fit")
+        self.btn_undo = QPushButton("Undo")
+        self.btn_redo = QPushButton("Redo")
+        self.btn_save = QPushButton("Save")
+        self.btn_export = QPushButton("Export")
+        self.btn_zoom_in = QPushButton("Zoom +")
+        self.btn_zoom_out = QPushButton("Zoom -")
+        self.btn_zoom_reset = QPushButton("Fit")
         toolbar.addWidget(self.btn_undo)
         toolbar.addWidget(self.btn_redo)
         toolbar.addSpacing(10)
-        toolbar.addWidget(self.btn_capture)
         toolbar.addWidget(self.btn_save)
         toolbar.addWidget(self.btn_export)
         toolbar.addSpacing(10)
@@ -638,7 +667,7 @@ class MainWindow(QMainWindow):
 
         # OCR worker thread
         self.ocr_thread: Optional[QThread] = None
-        self.worker: Optional[OCRWorker] = None
+        self.worker: Optional[OCRWorkerFixed] = None
 
         # Polling state
         self._polling = False
@@ -795,7 +824,7 @@ class MainWindow(QMainWindow):
 
     def _run_ocr(self) -> None:
         self.ocr_thread = QThread(self)
-        self.worker = OCRWorker()
+        self.worker = OCRWorkerFixed(config)  # Use fixed version with error handling
         self.worker.moveToThread(self.ocr_thread)
         self.ocr_thread.started.connect(self.worker.process_image_from_clipboard)
         self.worker.finished.connect(self.on_ocr_finished)
@@ -806,8 +835,10 @@ class MainWindow(QMainWindow):
 
     def on_ocr_finished(self, text: str, error: str) -> None:
         if error:
-            self.workbench.status_label.setText("OCR failed")
+            self.workbench.status_label.setText("OCR failed - see details")
             safe_write_log(fmt_log("ERROR", "OCR failed", error))
+            # Show detailed error message to user
+            QMessageBox.critical(self, "OCR Error", error)
             return
 
         cleaned = text.strip()
