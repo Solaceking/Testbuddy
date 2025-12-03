@@ -198,8 +198,22 @@ class OCRWorkerFixed(QObject):
                 "psm": self.config.ocr_psm
             })
             
-            # Build Tesseract config
-            ocr_config = f"--psm {self.config.ocr_psm} --oem {self.config.ocr_oem}"
+            # Build Tesseract config with explicit tessdata path
+            # Check if we're using bundled tessdata
+            tessdata_dir = None
+            if getattr(sys, 'frozen', False):
+                app_dir = Path(sys._MEIPASS)
+                tessdata_dir = app_dir / "tesseract" / "tessdata"
+            else:
+                app_dir = Path(__file__).parent
+                tessdata_dir = app_dir / "tesseract" / "tessdata"
+            
+            if tessdata_dir and tessdata_dir.exists():
+                # Pass tessdata directory directly in config
+                tessdata_path = str(tessdata_dir).replace('\\', '/')
+                ocr_config = f"--psm {self.config.ocr_psm} --oem {self.config.ocr_oem} --tessdata-dir {tessdata_path}"
+            else:
+                ocr_config = f"--psm {self.config.ocr_psm} --oem {self.config.ocr_oem}"
             
             # Run OCR
             text = pytesseract.image_to_string(
