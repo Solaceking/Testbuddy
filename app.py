@@ -112,6 +112,7 @@ config_manager = ConfigManager()
 config = config_manager.config
 history_manager = HistoryManager(config.history_file, config.history_max_entries)
 activity_logger = get_logger()  # Global activity logger
+logger = activity_logger  # Alias for convenience
 
 
 # Logging utilities
