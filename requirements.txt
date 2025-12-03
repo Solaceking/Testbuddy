@@ -15,5 +15,9 @@ reportlab>=4.0.0  # PDF generation with layout preservation
 python-docx>=0.8.11  # DOCX/Word export
 markdown>=3.5.0  # Markdown export
 
-# Optional: For future packaging
-# PyInstaller>=6.0.0
+# Document Intelligence (Phase 2c)
+opencv-python>=4.8.0.0  # Computer vision for table detection
+numpy>=1.24.0  # Array processing
+
+# Packaging (Phase 3a - Native Windows Build)
+pyinstaller>=6.0.0  # Windows executable packaging
