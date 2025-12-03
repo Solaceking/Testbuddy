@@ -93,8 +93,11 @@ class OCRWorkerFixed(QObject):
                 if "tesseract" in str(path).lower() and (app_dir in path.parents or app_dir == path.parent.parent):
                     tessdata_dir = path.parent / "tessdata"
                     if tessdata_dir.exists():
-                        os.environ['TESSDATA_PREFIX'] = str(tessdata_dir.parent)
+                        # Use forward slashes for TESSDATA_PREFIX (Tesseract requirement)
+                        tessdata_prefix = str(tessdata_dir.parent).replace('\\', '/')
+                        os.environ['TESSDATA_PREFIX'] = tessdata_prefix
                         self.logger.info("OCR", f"Using bundled tessdata: {tessdata_dir}")
+                        self.logger.debug("OCR", f"TESSDATA_PREFIX set to: {tessdata_prefix}")
                 
                 self.logger.info("OCR", f"✅ Tesseract found at: {path}")
                 break
