@@ -25,7 +25,7 @@ from typing import Optional
 from uuid import uuid4
 
 from PyQt6.QtCore import Qt, QTimer, QSize, QThread, QObject, pyqtSignal
-from PyQt6.QtGui import QFont, QAction, QPixmap, QImage, QTextListFormat, QTextBlockFormat
+from PyQt6.QtGui import QFont, QAction, QPixmap, QImage, QTextListFormat, QTextBlockFormat, QTextCharFormat
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
