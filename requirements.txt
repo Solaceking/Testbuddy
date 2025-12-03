@@ -16,4 +16,4 @@ python-docx>=0.8.11  # DOCX/Word export
 markdown>=3.5.0  # Markdown export
 
 # Optional: For future packaging
-# PyInstaller>=6.0.0
+PyInstaller>=6.0.0
