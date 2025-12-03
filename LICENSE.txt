@@ -1,0 +1,1 @@
+﻿TestBuddy Installer License\n\nThis is a placeholder license used for generating the NSIS installer. Replace with your project's actual LICENSE or EULA before distribution.

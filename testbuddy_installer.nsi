@@ -21,6 +21,9 @@ Section "Install"
   ; Copy the executable
   File /oname=${PRODUCT_EXE} "${EXE_SOURCE}"
 
+  ; Write an uninstaller executable to allow proper uninstall
+  WriteUninstaller "$INSTDIR\\Uninstall.exe"
+
   ; Create shortcuts
   CreateDirectory "$SMPROGRAMS\\${PRODUCT_NAME}"
   CreateShortCut "$SMPROGRAMS\\${PRODUCT_NAME}\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${PRODUCT_EXE}"
@@ -35,6 +38,8 @@ SectionEnd
 
 Section "Uninstall"
   Delete "$INSTDIR\\${PRODUCT_EXE}"
+  ; Remove the uninstaller executable as part of uninstall
+  Delete "$INSTDIR\\Uninstall.exe"
   Delete "$SMPROGRAMS\\${PRODUCT_NAME}\\${PRODUCT_NAME}.lnk"
   Delete "$DESKTOP\\${PRODUCT_NAME}.lnk"
   RMDir "$SMPROGRAMS\\${PRODUCT_NAME}"
