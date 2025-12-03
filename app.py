@@ -445,79 +445,6 @@ class HomePage(QWidget):
         # All
 
 
-class ImageViewer(QLabel):
-    """Enhanced image viewer with zoom and pan support."""
-
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
-        super().__init__(parent)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setMinimumSize(QSize(320, 240))
-        self.setStyleSheet("border: 1px solid #ccc; background: #f5f5f5;")
-        self._pixmap: Optional[QPixmap] = None
-        self._scaled_pixmap: Optional[QPixmap] = None
-        self._zoom_level = 1.0
-
-    def set_image(self, pixmap: Optional[QPixmap]) -> None:
-        """Set image from QPixmap."""
-        self._pixmap = pixmap
-        if pixmap:
-            self.update_display()
-        else:
-            self.setText("[No image loaded]")
-            self.clear()
-
-    def set_image_from_pil(self, pil_image) -> None:
-        """Set image from PIL Image object."""
-        try:
-            if pil_image is None:
-                self.setText("[No image loaded]")
-                return
-            data = pil_image.tobytes("rgb", "RGB")
-            h, w = pil_image.size
-            img = QImage(data, w, h, QImage.Format.Format_RGB888)
-            pixmap = QPixmap.fromImage(img)
-            self.set_image(pixmap)
-        except Exception as e:
-            self.setText(f"[Error loading image: {str(e)}]")
-
-    def update_display(self) -> None:
-        """Update displayed pixmap with current zoom level."""
-        if not self._pixmap:
-            return
-        if self._zoom_level == 1.0:
-            self._scaled_pixmap = self._pixmap
-        else:
-            w = int(self._pixmap.width() * self._zoom_level)
-            h = int(self._pixmap.height() * self._zoom_level)
-            self._scaled_pixmap = self._pixmap.scaledToWidth(w, Qt.TransformationMode.SmoothTransformation)
-        self.setPixmap(self._scaled_pixmap)
-
-    def zoom_in(self) -> None:
-        """Zoom in by 20%."""
-        self._zoom_level *= 1.2
-        self.update_display()
-        logger.info("UI", f"Image zoom in: {self._zoom_level:.1f}x")
-
-    def zoom_out(self) -> None:
-        """Zoom out by 20%."""
-        self._zoom_level /= 1.2
-        self.update_display()
-        logger.info("UI", f"Image zoom out: {self._zoom_level:.1f}x")
-
-    def zoom_reset(self) -> None:
-        """Reset zoom to 100%."""
-        self._zoom_level = 1.0
-        self.update_display()
-        logger.info("UI", "Image zoom reset to 1.0x")
-
-    def zoom_fit(self) -> None:
-        """Fit image to window."""
-        if not self._pixmap:
-            return
-        self._zoom_level = min(self.width() / self._pixmap.width(), self.height() / self._pixmap.height())
-        self.update_display()
-
-
 class Workbench(QWidget):
     """Capture & edit workspace: image viewer + rich text editor."""
 
@@ -556,24 +483,32 @@ class Workbench(QWidget):
         layout.addLayout(capture_layout)
         layout.addSpacing(15)
 
-        # Regular Toolbar (without emojis)
+        # Regular Toolbar (without emojis, no image controls)
         toolbar = QHBoxLayout()
         self.btn_undo = QPushButton("Undo")
         self.btn_redo = QPushButton("Redo")
+        self.btn_clear = QPushButton("Clear")
+        self.btn_clear.setStyleSheet("""
+            QPushButton {
+                background-color: #FF3B30;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #D92D20;
+            }
+        """)
         self.btn_save = QPushButton("Save")
         self.btn_export = QPushButton("Export")
-        self.btn_zoom_in = QPushButton("Zoom +")
-        self.btn_zoom_out = QPushButton("Zoom -")
-        self.btn_zoom_reset = QPushButton("Fit")
         toolbar.addWidget(self.btn_undo)
         toolbar.addWidget(self.btn_redo)
+        toolbar.addWidget(self.btn_clear)
         toolbar.addSpacing(10)
         toolbar.addWidget(self.btn_save)
         toolbar.addWidget(self.btn_export)
-        toolbar.addSpacing(10)
-        toolbar.addWidget(self.btn_zoom_in)
-        toolbar.addWidget(self.btn_zoom_out)
-        toolbar.addWidget(self.btn_zoom_reset)
         toolbar.addStretch()
         layout.addLayout(toolbar)
 
@@ -610,32 +545,15 @@ class Workbench(QWidget):
         self.status_label = QLabel("Ready")
         layout.addWidget(self.status_label)
 
-        # Main splitter
-        splitter = QSplitter(Qt.Orientation.Horizontal, self)
-
-        # Left: image panel
-        left = QWidget()
-        left_layout = QVBoxLayout(left)
-        self.image_viewer = ImageViewer()
-        left_layout.addWidget(self.image_viewer)
-
-        # Right: text editor with info panel
-        right = QWidget()
-        right_layout = QVBoxLayout(right)
+        # Text editor (full width, no image viewer)
         self.text_editor = QTextEdit()
         self.text_editor.setPlaceholderText("OCR result appears here. Edit as needed.")
         self.text_editor.setAcceptRichText(False)  # Plain text only for OCR
-        right_layout.addWidget(self.text_editor)
+        layout.addWidget(self.text_editor)
 
         # Character count
         self.char_count_label = QLabel("0 characters")
-        right_layout.addWidget(self.char_count_label)
-
-        splitter.addWidget(left)
-        splitter.addWidget(right)
-        splitter.setSizes([420, 580])
-
-        layout.addWidget(splitter)
+        layout.addWidget(self.char_count_label)
 
         # Current session metadata
         self.current_session_id: Optional[str] = None
@@ -709,9 +627,7 @@ class MainWindow(QMainWindow):
         self.workbench.btn_export.clicked.connect(self.on_export_session)
         self.workbench.btn_undo.clicked.connect(self.on_undo)
         self.workbench.btn_redo.clicked.connect(self.on_redo)
-        self.workbench.btn_zoom_in.clicked.connect(self.workbench.image_viewer.zoom_in)
-        self.workbench.btn_zoom_out.clicked.connect(self.workbench.image_viewer.zoom_out)
-        self.workbench.btn_zoom_reset.clicked.connect(self.workbench.image_viewer.zoom_fit)
+        self.workbench.btn_clear.clicked.connect(self.on_clear_text)
         
         # Formatting toolbar connections
         self.workbench.btn_bold.clicked.connect(self.on_format_bold)
@@ -879,13 +795,9 @@ class MainWindow(QMainWindow):
         self.workbench.text_editor.setPlainText(cleaned)
         self.workbench.status_label.setText(f"OCR complete ({len(cleaned)} chars)")
         
-        # Display image if available from worker
+        # Store image reference (no display needed)
         if self.worker and hasattr(self.worker, 'last_image') and self.worker.last_image:
-            try:
-                self.workbench.current_image = self.worker.last_image
-                self.workbench.image_viewer.set_image_from_pil(self.worker.last_image)
-            except Exception as e:
-                safe_write_log(fmt_log("ERROR", "Failed to display image", str(e)))
+            self.workbench.current_image = self.worker.last_image
         
         safe_write_log(fmt_log("INFO", "OCR finished", f"chars={len(cleaned)}"))
 
@@ -988,6 +900,12 @@ class MainWindow(QMainWindow):
             self.workbench.undo_redo.redo()
             self.workbench.status_label.setText("Redo")
             safe_write_log(fmt_log("INFO", "Text redo", ""))
+
+    def on_clear_text(self) -> None:
+        """Clear all text in the editor."""
+        self.workbench.text_editor.clear()
+        self.workbench.status_label.setText("Text cleared")
+        logger.info("UI", "Text editor cleared")
 
     def on_format_bold(self) -> None:
         """Apply bold formatting to selected text."""
