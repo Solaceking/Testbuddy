@@ -1,0 +1,76 @@
+[2025-11-29 17:52:26] [INFO] === TestBuddy session start ===
+[2025-11-29 17:52:27] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 18:03:56] [INFO] === TestBuddy session start ===
+[2025-11-29 18:03:58] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 18:07:27] [INFO] Screenshot requested
+[2025-11-29 18:07:27] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 18:07:27] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 18:07:27] [DEBUG] No image yet; retry
+[2025-11-29 18:07:27] [DEBUG] No image yet; retry
+[2025-11-29 18:07:28] [DEBUG] No image yet; retry
+[2025-11-29 18:07:28] [DEBUG] No image yet; retry
+[2025-11-29 18:07:29] [DEBUG] No image yet; retry
+[2025-11-29 18:07:29] [DEBUG] No image yet; retry
+[2025-11-29 18:07:30] [DEBUG] No image yet; retry
+[2025-11-29 18:07:30] [DEBUG] No image yet; retry
+[2025-11-29 18:07:31] [DEBUG] No image yet; retry
+[2025-11-29 18:07:31] [DEBUG] No image yet; retry
+[2025-11-29 18:07:32] [DEBUG] No image yet; retry
+[2025-11-29 18:07:32] [DEBUG] No image yet; retry
+[2025-11-29 18:07:33] [DEBUG] No image yet; retry
+[2025-11-29 18:07:33] [INFO] Image found in clipboard
+[2025-11-29 18:07:33] [DEBUG] Clipboard polling stopped
+[2025-11-29 18:07:33] [INFO] OCR started
+[2025-11-29 18:07:35] [ERROR] OCR failed | (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+Traceback (most recent call last):
+  File "main.py", line 85, in process_image_from_clipboard
+  File "pytesseract\pytesseract.py", line 486, in image_to_string
+  File "pytesseract\pytesseract.py", line 489, in <lambda>
+  File "pytesseract\pytesseract.py", line 352, in run_and_get_output
+  File "pytesseract\pytesseract.py", line 284, in run_tesseract
+pytesseract.pytesseract.TesseractError: (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+
+[2025-11-29 18:09:03] [INFO] === TestBuddy session start ===
+[2025-11-29 18:09:04] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 18:09:08] [INFO] Screenshot requested
+[2025-11-29 18:09:08] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 18:09:08] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 18:09:08] [DEBUG] No image yet; retry
+[2025-11-29 18:09:08] [DEBUG] No image yet; retry
+[2025-11-29 18:09:09] [DEBUG] No image yet; retry
+[2025-11-29 18:09:09] [DEBUG] No image yet; retry
+[2025-11-29 18:09:10] [DEBUG] No image yet; retry
+[2025-11-29 18:09:10] [DEBUG] No image yet; retry
+[2025-11-29 18:09:11] [DEBUG] No image yet; retry
+[2025-11-29 18:09:11] [DEBUG] No image yet; retry
+[2025-11-29 18:09:12] [DEBUG] No image yet; retry
+[2025-11-29 18:09:12] [DEBUG] No image yet; retry
+[2025-11-29 18:09:13] [DEBUG] No image yet; retry
+[2025-11-29 18:09:13] [INFO] Image found in clipboard
+[2025-11-29 18:09:13] [DEBUG] Clipboard polling stopped
+[2025-11-29 18:09:13] [INFO] OCR started
+[2025-11-29 18:09:13] [ERROR] OCR failed | (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+Traceback (most recent call last):
+  File "main.py", line 85, in process_image_from_clipboard
+  File "pytesseract\pytesseract.py", line 486, in image_to_string
+  File "pytesseract\pytesseract.py", line 489, in <lambda>
+  File "pytesseract\pytesseract.py", line 352, in run_and_get_output
+  File "pytesseract\pytesseract.py", line 284, in run_tesseract
+pytesseract.pytesseract.TesseractError: (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+
+[2025-11-29 18:09:22] [INFO] Log cleared
+[2025-11-29 18:09:25] [INFO] Screenshot requested
+[2025-11-29 18:09:25] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 18:09:25] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 18:09:25] [INFO] Image found in clipboard
+[2025-11-29 18:09:25] [DEBUG] Clipboard polling stopped
+[2025-11-29 18:09:25] [INFO] OCR started
+[2025-11-29 18:09:25] [ERROR] OCR failed | (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+Traceback (most recent call last):
+  File "main.py", line 85, in process_image_from_clipboard
+  File "pytesseract\pytesseract.py", line 486, in image_to_string
+  File "pytesseract\pytesseract.py", line 489, in <lambda>
+  File "pytesseract\pytesseract.py", line 352, in run_and_get_output
+  File "pytesseract\pytesseract.py", line 284, in run_tesseract
+pytesseract.pytesseract.TesseractError: (1, 'Error opening data file C:\\Program Files (x86)\\Tesseract-OCR\\eng.traineddata Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory. Failed loading language \'eng\' Tesseract couldn\'t load any languages! Could not initialize tesseract.')
+

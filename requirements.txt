@@ -1,0 +1,19 @@
+# Core GUI Framework
+PyQt6>=6.7.0
+
+# OCR Engine (requires Tesseract-OCR installed on Windows)
+pytesseract>=0.3.13
+
+# Image Handling
+Pillow>=11.0.0
+
+# Clipboard Management
+pyperclip>=1.9.0
+
+# Export Formats (Phase 2b Professional Features)
+reportlab>=4.0.0  # PDF generation with layout preservation
+python-docx>=0.8.11  # DOCX/Word export
+markdown>=3.5.0  # Markdown export
+
+# Optional: For future packaging
+# PyInstaller>=6.0.0

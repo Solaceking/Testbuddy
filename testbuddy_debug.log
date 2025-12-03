@@ -1,0 +1,155 @@
+[2025-11-29 17:01:47] [INFO] === TestBuddy session start ===
+[2025-11-29 17:02:06] [INFO] === TestBuddy session start ===
+[2025-11-29 17:02:27] [INFO] === TestBuddy session start ===
+[2025-11-29 17:02:28] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:02:53] [INFO] === TestBuddy session start ===
+[2025-11-29 17:02:54] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:03:49] [INFO] === TestBuddy session start ===
+[2025-11-29 17:03:50] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:07:30] [INFO] === SnapOCR session start ===
+[2025-11-29 17:07:32] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:07:38] [INFO] Screenshot requested
+[2025-11-29 17:07:38] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 17:07:38] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 17:07:38] [DEBUG] No image yet; retry
+[2025-11-29 17:07:38] [DEBUG] No image yet; retry
+[2025-11-29 17:07:39] [DEBUG] No image yet; retry
+[2025-11-29 17:07:39] [DEBUG] No image yet; retry
+[2025-11-29 17:07:40] [DEBUG] No image yet; retry
+[2025-11-29 17:07:40] [DEBUG] No image yet; retry
+[2025-11-29 17:07:41] [DEBUG] No image yet; retry
+[2025-11-29 17:07:41] [DEBUG] No image yet; retry
+[2025-11-29 17:07:42] [DEBUG] No image yet; retry
+[2025-11-29 17:07:43] [INFO] Image found in clipboard
+[2025-11-29 17:07:43] [DEBUG] Clipboard polling stopped
+[2025-11-29 17:07:43] [INFO] OCR started
+[2025-11-29 17:07:43] [ERROR] OCR failed | tesseract is not installed or it's not in your PATH. See README file for more information.
+Traceback (most recent call last):
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py", line 275, in run_tesseract
+    proc = subprocess.Popen(cmd_args, **subprocess_args())
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1551, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\idavi\Documents\Projects\testbuddy\main.py", line 84, in process_image_from_clipboard
+    text = pytesseract.image_to_string(img_gray)  # , config=config
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py", line 486, in image_to_string
+    return {
+           ~
+    ...<2 lines>...
+        Output.STRING: lambda: run_and_get_output(*args),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }[output_type]()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py", line 489, in <lambda>
+    Output.STRING: lambda: run_and_get_output(*args),
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py", line 352, in run_and_get_output
+    run_tesseract(**kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\idavi\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py", line 280, in run_tesseract
+    raise TesseractNotFoundError()
+pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+
+[2025-11-29 17:09:51] [INFO] === TestBuddy session start ===
+[2025-11-29 17:09:52] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:09:55] [INFO] Screenshot requested
+[2025-11-29 17:09:55] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 17:09:55] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 17:09:55] [DEBUG] No image yet; retry
+[2025-11-29 17:09:55] [DEBUG] No image yet; retry
+[2025-11-29 17:09:56] [DEBUG] No image yet; retry
+[2025-11-29 17:09:56] [DEBUG] No image yet; retry
+[2025-11-29 17:09:57] [DEBUG] No image yet; retry
+[2025-11-29 17:09:57] [DEBUG] No image yet; retry
+[2025-11-29 17:09:58] [DEBUG] No image yet; retry
+[2025-11-29 17:09:58] [DEBUG] No image yet; retry
+[2025-11-29 17:09:59] [DEBUG] No image yet; retry
+[2025-11-29 17:09:59] [DEBUG] No image yet; retry
+[2025-11-29 17:10:00] [DEBUG] No image yet; retry
+[2025-11-29 17:10:00] [DEBUG] No image yet; retry
+[2025-11-29 17:10:01] [DEBUG] No image yet; retry
+[2025-11-29 17:10:01] [INFO] Image found in clipboard
+[2025-11-29 17:10:01] [DEBUG] Clipboard polling stopped
+[2025-11-29 17:10:01] [INFO] OCR started
+[2025-11-29 17:10:03] [INFO] OCR finished | chars=451
+[2025-11-29 17:10:12] [INFO] Text copied to clipboard | chars=451
+[2025-11-29 17:11:34] [INFO] Screenshot requested
+[2025-11-29 17:11:34] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 17:11:34] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 17:11:34] [DEBUG] No image yet; retry
+[2025-11-29 17:11:35] [DEBUG] No image yet; retry
+[2025-11-29 17:11:35] [DEBUG] No image yet; retry
+[2025-11-29 17:11:36] [DEBUG] No image yet; retry
+[2025-11-29 17:11:36] [DEBUG] No image yet; retry
+[2025-11-29 17:11:37] [DEBUG] No image yet; retry
+[2025-11-29 17:11:37] [DEBUG] No image yet; retry
+[2025-11-29 17:11:38] [DEBUG] No image yet; retry
+[2025-11-29 17:11:38] [DEBUG] No image yet; retry
+[2025-11-29 17:11:39] [DEBUG] No image yet; retry
+[2025-11-29 17:11:39] [DEBUG] No image yet; retry
+[2025-11-29 17:11:40] [INFO] Image found in clipboard
+[2025-11-29 17:11:40] [DEBUG] Clipboard polling stopped
+[2025-11-29 17:11:40] [INFO] OCR started
+[2025-11-29 17:11:40] [INFO] OCR finished | chars=251
+[2025-11-29 17:19:44] [INFO] === TestBuddy session start ===
+[2025-11-29 17:19:44] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:19:50] [INFO] Screenshot requested
+[2025-11-29 17:19:50] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 17:19:50] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 17:19:50] [DEBUG] No image yet; retry
+[2025-11-29 17:19:51] [DEBUG] No image yet; retry
+[2025-11-29 17:19:51] [DEBUG] No image yet; retry
+[2025-11-29 17:19:52] [DEBUG] No image yet; retry
+[2025-11-29 17:19:52] [DEBUG] No image yet; retry
+[2025-11-29 17:19:53] [DEBUG] No image yet; retry
+[2025-11-29 17:19:53] [DEBUG] No image yet; retry
+[2025-11-29 17:19:54] [DEBUG] No image yet; retry
+[2025-11-29 17:19:54] [INFO] Image found in clipboard
+[2025-11-29 17:19:54] [DEBUG] Clipboard polling stopped
+[2025-11-29 17:19:54] [INFO] OCR started
+[2025-11-29 17:19:55] [INFO] OCR finished | chars=115
+[2025-11-29 17:23:43] [INFO] === TestBuddy session start ===
+[2025-11-29 17:23:44] [INFO] Application started | Platform: Windows-11-10.0.26200-SP0
+[2025-11-29 17:23:53] [INFO] Screenshot requested
+[2025-11-29 17:23:53] [INFO] Launched Snipping Tool via ms-screenclip
+[2025-11-29 17:23:53] [DEBUG] Clipboard polling started | Interval=500ms
+[2025-11-29 17:23:53] [DEBUG] No image yet; retry
+[2025-11-29 17:23:53] [DEBUG] No image yet; retry
+[2025-11-29 17:23:54] [DEBUG] No image yet; retry
+[2025-11-29 17:23:54] [DEBUG] No image yet; retry
+[2025-11-29 17:23:55] [DEBUG] No image yet; retry
+[2025-11-29 17:23:55] [DEBUG] No image yet; retry
+[2025-11-29 17:23:56] [DEBUG] No image yet; retry
+[2025-11-29 17:23:56] [DEBUG] No image yet; retry
+[2025-11-29 17:23:57] [DEBUG] No image yet; retry
+[2025-11-29 17:23:57] [INFO] Image found in clipboard
+[2025-11-29 17:23:57] [DEBUG] Clipboard polling stopped
+[2025-11-29 17:23:57] [INFO] OCR started
+[2025-11-29 17:23:58] [INFO] OCR finished | chars=447
+[2025-11-29 17:24:13] [INFO] Session exported | File: testbuddy_session_20251129_172413.txt
+[2025-12-03 18:47:12] [INFO] TestBuddy v2 started
+[2025-12-03 18:49:58] [INFO] TestBuddy v2 started
+[2025-12-03 18:54:13] [INFO] TestBuddy v2 started
+[2025-12-03 18:58:51] [INFO] TestBuddy v2 started
