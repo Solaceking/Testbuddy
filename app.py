@@ -435,12 +435,12 @@ class HomePage(QWidget):
         """Handle search input changes."""
         self.update_lists()
         if text:
-            logger.info(f"Search filter applied: '{text}'")
+            logger.info("UI", f"Search filter applied: '{text}'")
 
     def on_filter_changed(self, text: str) -> None:
         """Handle filter category changes."""
         self.update_lists()
-        logger.info(f"Category filter changed: {text}")
+        logger.info("UI", f"Category filter changed: {text}")
 
         # All
 
@@ -496,19 +496,19 @@ class ImageViewer(QLabel):
         """Zoom in by 20%."""
         self._zoom_level *= 1.2
         self.update_display()
-        logger.info(f"Image zoom in: {self._zoom_level:.1f}x")
+        logger.info("UI", f"Image zoom in: {self._zoom_level:.1f}x")
 
     def zoom_out(self) -> None:
         """Zoom out by 20%."""
         self._zoom_level /= 1.2
         self.update_display()
-        logger.info(f"Image zoom out: {self._zoom_level:.1f}x")
+        logger.info("UI", f"Image zoom out: {self._zoom_level:.1f}x")
 
     def zoom_reset(self) -> None:
         """Reset zoom to 100%."""
         self._zoom_level = 1.0
         self.update_display()
-        logger.info("Image zoom reset to 1.0x")
+        logger.info("UI", "Image zoom reset to 1.0x")
 
     def zoom_fit(self) -> None:
         """Fit image to window."""
@@ -772,7 +772,7 @@ class MainWindow(QMainWindow):
             for s in sessions
         ]
         self.home_page.refresh_sessions(sessions_data)
-        logger.info(f"Loaded {len(sessions)} sessions to home page")
+        logger.info("SESSION", f"Loaded {len(sessions)} sessions to home page")
 
     def on_new_session(self) -> None:
         activity_logger.log_ui_action("new_session_button_clicked")
@@ -996,7 +996,7 @@ class MainWindow(QMainWindow):
         fmt.setFontWeight(700 if is_bold else 400)
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
         self.workbench.status_label.setText("Bold toggled")
-        logger.info(f"Text formatting: Bold {'enabled' if is_bold else 'disabled'}")
+        logger.info("UI", f"Text formatting: Bold {'enabled' if is_bold else 'disabled'}")
 
     def on_format_italic(self) -> None:
         """Apply italic formatting to selected text."""
@@ -1005,7 +1005,7 @@ class MainWindow(QMainWindow):
         fmt.setFontItalic(is_italic)
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
         self.workbench.status_label.setText("Italic toggled")
-        logger.info(f"Text formatting: Italic {'enabled' if is_italic else 'disabled'}")
+        logger.info("UI", f"Text formatting: Italic {'enabled' if is_italic else 'disabled'}")
 
     def on_format_underline(self) -> None:
         """Apply underline formatting to selected text."""
@@ -1014,7 +1014,7 @@ class MainWindow(QMainWindow):
         fmt.setFontUnderline(is_underline)
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
         self.workbench.status_label.setText("Underline toggled")
-        logger.info(f"Text formatting: Underline {'enabled' if is_underline else 'disabled'}")
+        logger.info("UI", f"Text formatting: Underline {'enabled' if is_underline else 'disabled'}")
 
     def on_font_size_changed(self, size_text: str) -> None:
         """Change font size."""
@@ -1023,7 +1023,7 @@ class MainWindow(QMainWindow):
             fmt = self.workbench.text_editor.currentCharFormat()
             fmt.setFontPointSize(size)
             self.workbench.text_editor.mergeCurrentCharFormat(fmt)
-            logger.info(f"Font size changed to {size}pt")
+            logger.info("UI", f"Font size changed to {size}pt")
             self.workbench.status_label.setText(f"Font size: {size}pt")
         except ValueError:
             pass
@@ -1031,7 +1031,7 @@ class MainWindow(QMainWindow):
     def go_home(self) -> None:
         self.load_sessions_to_home()
         self.stack.setCurrentWidget(self.home_page)
-        logger.info("Navigation: Returned to home page")
+        logger.info("UI", "Navigation: Returned to home page")
 
 
 def main() -> None:
