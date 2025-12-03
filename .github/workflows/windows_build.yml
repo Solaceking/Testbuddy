@@ -54,3 +54,33 @@ jobs:
         with:
           name: TestBuddy-installer
           path: TestBuddy-Setup.exe
+
+      - name: Optional: Sign artifacts (if PFX secret provided)
+        if: ${{ secrets.SIGN_CERT_PFX != '' && secrets.SIGN_CERT_PASSWORD != '' }}
+        shell: powershell
+        run: |
+          Write-Host "Writing PFX to file and attempting to sign artifacts..."
+          $pfxBase64 = '${{ secrets.SIGN_CERT_PFX }}'
+          [IO.File]::WriteAllBytes('cert.pfx', [Convert]::FromBase64String($pfxBase64))
+          choco install osslsigncode -y || Write-Host 'osslsigncode install may have failed'
+          if (Test-Path .\dist\TestBuddy.exe) {
+            Write-Host 'Signing dist\\TestBuddy.exe'
+            osslsigncode sign -pkcs12 cert.pfx -pass '${{ secrets.SIGN_CERT_PASSWORD }}' -n 'TestBuddy' -i 'http://testbuddy.local' -t 'http://timestamp.digicert.com' -in .\dist\TestBuddy.exe -out .\dist\TestBuddy-signed.exe || Write-Host 'Signing EXE failed'
+          }
+          if (Test-Path .\TestBuddy-Setup.exe) {
+            Write-Host 'Signing TestBuddy-Setup.exe'
+            osslsigncode sign -pkcs12 cert.pfx -pass '${{ secrets.SIGN_CERT_PASSWORD }}' -n 'TestBuddy' -i 'http://testbuddy.local' -t 'http://timestamp.digicert.com' -in .\TestBuddy-Setup.exe -out .\TestBuddy-Setup-signed.exe || Write-Host 'Signing installer failed'
+          }
+
+      - name: Create GitHub release and attach artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          tag: build-${{ github.run_number }}
+          name: TestBuddy build ${{ github.run_number }}
+          body: |
+            Automated build from commit ${{ github.sha }}
+            - Runner: ${{ runner.os }}
+            - Workflow: ${{ github.workflow }}
+          files: |
+            dist/TestBuddy*.exe
+            TestBuddy-Setup*.exe
