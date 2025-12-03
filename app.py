@@ -249,11 +249,10 @@ class NewSessionDialog(QDialog):
 class ExportDialog(QDialog):
     """Dialog to select export formats and save exported files."""
 
-    def __init__(self, parent: Optional[QWidget] = None, text: str = "") -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Export Session")
         self.setMinimumWidth(400)
-        self.text = text
         self.selected_formats = []
 
         layout = QVBoxLayout(self)
@@ -586,7 +585,7 @@ class Workbench(QWidget):
         right_layout = QVBoxLayout(right)
         self.text_editor = QTextEdit()
         self.text_editor.setPlaceholderText("OCR result appears here. Edit as needed.")
-        self.text_editor.setAcceptRichText(False)  # Plain text only for OCR
+        self.text_editor.setAcceptRichText(True)  # Rich text enabled
         right_layout.addWidget(self.text_editor)
 
         # Character count
@@ -610,11 +609,25 @@ class Workbench(QWidget):
         # Connect text editor signals
         self.text_editor.textChanged.connect(self._on_text_changed)
 
+        # Store last text state for undo/redo
+        self.last_html: str = ""
+
     def _on_text_changed(self) -> None:
-        """Update character count when text changes."""
+        """Update character count and push text changes to undo stack."""
+        # Update char count
         text = self.text_editor.toPlainText()
         char_count = len(text)
         self.char_count_label.setText(f"{char_count} characters")
+
+        # Push keystroke changes
+        self._push_keystroke_change()
+
+    def _push_keystroke_change(self) -> None:
+        """Push a text change from a keystroke to the undo stack."""
+        current_html = self.text_editor.toHtml()
+        if current_html != self.last_html:
+            self.undo_redo.push_keystroke(self.last_html, current_html)
+            self.last_html = current_html
 
 
 class MainWindow(QMainWindow):
@@ -744,12 +757,22 @@ class MainWindow(QMainWindow):
             safe_write_log(fmt_log("INFO", "New session created", f"name={name}, category={category}"))
 
     def open_session_from_item(self, item: QListWidgetItem) -> None:
-        text = item.text()
-        self.workbench.current_session_name = text
-        self.workbench.text_editor.setPlainText(f"{text}\n\n(loaded from history)")
-        self.workbench.status_label.setText(f"Session: {text}")
-        self.stack.setCurrentWidget(self.workbench)
-        safe_write_log(fmt_log("INFO", "Session opened", f"name={text}"))
+        # Get session from list
+        row = self.home_page.full_list.row(item)
+        if row < 0:
+            row = self.home_page.recent_list.row(item)
+
+        if 0 <= row < len(self.home_page.all_sessions):
+            session_data = self.home_page.all_sessions[row]
+            name = session_data.get("name", "Untitled")
+            full_text = session_data.get("full_text", "")
+
+            # Update workbench
+            self.workbench.current_session_name = name
+            self.workbench.text_editor.setHtml(full_text)
+            self.workbench.status_label.setText(f"Session: {name}")
+            self.stack.setCurrentWidget(self.workbench)
+            safe_write_log(fmt_log("INFO", "Session opened", f"name={name}"))
 
     def on_capture(self) -> None:
         self.workbench.status_label.setText("Launching Snipping Tool...")
@@ -825,9 +848,9 @@ class MainWindow(QMainWindow):
         safe_write_log(fmt_log("INFO", "OCR finished", f"chars={len(cleaned)}"))
 
     def on_save_session(self) -> None:
-        text = self.workbench.text_editor.toPlainText()
+        text = self.workbench.text_editor.toHtml()
         
-        if not text.strip():
+        if not self.workbench.text_editor.toPlainText().strip():
             QMessageBox.warning(self, "Save", "No text to save.")
             return
 
@@ -854,16 +877,16 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to save session: {e}")
 
     def on_export_session(self) -> None:
-        text = self.workbench.text_editor.toPlainText()
+        text = self.workbench.text_editor.toHtml()
         
-        if not text.strip():
+        if not self.workbench.text_editor.toPlainText().strip():
             QMessageBox.warning(self, "Export", "No text to export.")
             return
 
         name = self.current_session.name if self.current_session else "export"
 
         # Show export dialog
-        export_dialog = ExportDialog(self, text)
+        export_dialog = ExportDialog(self)
         if export_dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
@@ -926,35 +949,55 @@ class MainWindow(QMainWindow):
 
     def on_format_bold(self) -> None:
         """Apply bold formatting to selected text."""
+        old_html = self.workbench.text_editor.toHtml()
         fmt = self.workbench.text_editor.currentCharFormat()
         fmt.setFontWeight(700 if fmt.fontWeight() != 700 else 400)
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
+        self._push_text_change("Bold", old_html)
         self.workbench.status_label.setText("Bold toggled")
 
     def on_format_italic(self) -> None:
         """Apply italic formatting to selected text."""
+        old_html = self.workbench.text_editor.toHtml()
         fmt = self.workbench.text_editor.currentCharFormat()
         fmt.setFontItalic(not fmt.fontItalic())
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
+        self._push_text_change("Italic", old_html)
         self.workbench.status_label.setText("Italic toggled")
 
     def on_format_underline(self) -> None:
         """Apply underline formatting to selected text."""
+        old_html = self.workbench.text_editor.toHtml()
         fmt = self.workbench.text_editor.currentCharFormat()
         fmt.setFontUnderline(not fmt.fontUnderline())
         self.workbench.text_editor.mergeCurrentCharFormat(fmt)
+        self._push_text_change("Underline", old_html)
         self.workbench.status_label.setText("Underline toggled")
 
     def on_font_size_changed(self, size_text: str) -> None:
         """Change font size."""
         try:
             size = int(size_text.replace("pt", ""))
+            old_html = self.workbench.text_editor.toHtml()
             fmt = self.workbench.text_editor.currentCharFormat()
             fmt.setFontPointSize(size)
             self.workbench.text_editor.mergeCurrentCharFormat(fmt)
+            self._push_text_change(f"Font size {size}pt", old_html)
             self.workbench.status_label.setText(f"Font size: {size}pt")
         except ValueError:
             pass
+
+    def _push_text_change(self, description: str, old_html: str) -> None:
+        """Push a text change to the undo stack."""
+        if not self.workbench:
+            return
+
+        # Get current HTML
+        current_html = self.workbench.text_editor.toHtml()
+
+        # Push command if different
+        if current_html != old_html:
+            self.workbench.undo_redo.text_changed(old_html, current_html, description)
 
     def go_home(self) -> None:
         self.load_sessions_to_home()

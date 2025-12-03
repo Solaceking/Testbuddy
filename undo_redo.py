@@ -16,7 +16,7 @@ class TextEditCommand(QUndoCommand):
     """Represents a single text edit operation (insert, delete, replace)."""
 
     def __init__(self, editor: Union[QPlainTextEdit, QTextEdit], old_text: str, new_text: str, 
-                 description: str = "Edit") -> None:
+                 description: str = "Edit", command_id: int = -1) -> None:
         """Initialize text edit command.
         
         Args:
@@ -24,11 +24,25 @@ class TextEditCommand(QUndoCommand):
             old_text: Previous text content
             new_text: New text content
             description: Command description for UI display
+            command_id: Unique ID for command merging
         """
         super().__init__(description)
         self.editor = editor
         self.old_text = old_text
         self.new_text = new_text
+        self.command_id = command_id
+
+    def id(self) -> int:
+        """Return command ID for merging."""
+        return self.command_id
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        """Merge consecutive keystroke commands."""
+        if other.id() != self.id():
+            return False
+
+        self.new_text = other.new_text
+        return True
 
     def redo(self) -> None:
         """Apply the new text."""
@@ -36,7 +50,7 @@ class TextEditCommand(QUndoCommand):
         if isinstance(self.editor, QPlainTextEdit):
             self.editor.setPlainText(self.new_text)
         else:
-            self.editor.setText(self.new_text)
+            self.editor.setHtml(self.new_text)
         self.editor.blockSignals(False)
 
     def undo(self) -> None:
@@ -45,7 +59,7 @@ class TextEditCommand(QUndoCommand):
         if isinstance(self.editor, QPlainTextEdit):
             self.editor.setPlainText(self.old_text)
         else:
-            self.editor.setText(self.old_text)
+            self.editor.setHtml(self.old_text)
         self.editor.blockSignals(False)
 
 
@@ -83,7 +97,12 @@ class UndoRedoManager:
             new_text: New text content
             description: Description of the change
         """
-        command = TextEditCommand(self.editor, old_text, new_text, description)
+        command = TextEditCommand(self.editor, old_text, new_text, description, command_id=-1)
+        self.push_command(command)
+
+    def push_keystroke(self, old_text: str, new_text: str) -> None:
+        """Record a keystroke, allowing merging."""
+        command = TextEditCommand(self.editor, old_text, new_text, "Keystroke", command_id=1)
         self.push_command(command)
 
     def undo(self) -> None:
