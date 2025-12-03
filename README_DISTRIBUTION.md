@@ -80,6 +80,24 @@ If you want to use `signtool` instead of `osslsigncode`
 - Modify the workflow step `Optional: Sign artifacts` to call `signtool.exe sign /f cert.pfx /p <password> /tr http://timestamp.digicert.com /td sha256 /fd sha256 <file>`
 - On hosted runners, `signtool` may not be present. You'll need either to install Windows SDK in the runner (adds time), or use a self-hosted Windows runner that has `signtool` installed and your signing cert available.
 
+Using `signtool` on a self-hosted signing runner
+------------------------------------------------
+For the most trustworthy signing (EV certs) use `signtool.exe` on a self-hosted Windows runner that has the Windows SDK installed and `signtool` available. Steps:
+
+1. Provision a secure Windows VM (Azure, AWS, or on-prem).
+2. Install Windows SDK (contains `signtool.exe`).
+3. Securely copy your PFX to the VM (or use an HSM) and protect it; store it in a protected folder accessible only to the runner account.
+4. Register the VM as a self-hosted runner in GitHub Actions (Repository settings → Actions → Runners → New self-hosted runner).
+5. Modify the workflow to run the signing step on the self-hosted runner by adding `runs-on: [self-hosted, windows]` to the signing job, and call `signtool`:
+
+```powershell
+signtool sign /f C:\path\to\cert.pfx /p "PFX_PASSWORD" /tr http://timestamp.digicert.com /td sha256 /fd sha256 "C:\path\to\TestBuddy.exe"
+```
+
+6. After signing, upload signed artifacts back to the Actions job workspace and attach them to the Release as shown earlier.
+
+Security note: keep your private key secret. Prefer using an HSM or Azure Key Vault with a signing proxy rather than storing PFX on disk.
+
 Recommended post-release steps
 ------------------------------
 - Sign all binaries and installer before publishing to avoid "Unknown Publisher" warnings.

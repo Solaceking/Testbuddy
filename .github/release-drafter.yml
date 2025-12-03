@@ -1,0 +1,13 @@
+name-template: "TestBuddy $NEXT_PATCH_VERSION"
+tag-template: "vNEXT_PATCH"
+
+change-template: "- $TITLE (#$NUMBER) by @$AUTHOR"
+template: |
+  ## What's changed
+
+  $CHANGES
+
+  ----
+  Built on: $TODAY
+  Commit: $COMMIT
+  

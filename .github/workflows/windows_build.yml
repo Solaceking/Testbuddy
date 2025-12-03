@@ -113,3 +113,24 @@ jobs:
             dist/TestBuddy*.exe
             TestBuddy-Setup*.exe
             CHECKSUMS.txt
+
+      - name: Append CHECKSUMS.txt to release body (if present)
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const tag = `${{ steps.tag.outputs.result }}`
+            if (!fs.existsSync('CHECKSUMS.txt')) {
+              core.info('No CHECKSUMS.txt found, skipping append.')
+              return
+            }
+            const checksums = fs.readFileSync('CHECKSUMS.txt', 'utf8')
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN)
+            const rel = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag })
+            const releaseId = rel.data.id
+            const newBody = `${rel.data.body}\n\n---\n**Checksums**\n\n\n\`\`\`\n${checksums}\n\`\`\``
+            await octokit.rest.repos.updateRelease({ owner, repo, release_id: releaseId, body: newBody })
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
