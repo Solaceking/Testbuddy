@@ -221,10 +221,34 @@ class OCRWorkerFixed(QObject):
             self.finished.emit("", error_msg)
             
         except Exception as e:
+            import traceback
+            error_traceback = traceback.format_exc()
+            
+            # Save detailed error to file for user to copy
+            try:
+                with open("tesseract_error_details.txt", "w", encoding="utf-8") as f:
+                    f.write("=" * 80 + "\n")
+                    f.write("TESSERACT ERROR DETAILS\n")
+                    f.write("=" * 80 + "\n\n")
+                    f.write(f"Error Type: {type(e).__name__}\n")
+                    f.write(f"Error Message: {str(e)}\n\n")
+                    f.write("Full Traceback:\n")
+                    f.write("-" * 80 + "\n")
+                    f.write(error_traceback)
+                    f.write("-" * 80 + "\n\n")
+                    f.write("Configuration:\n")
+                    f.write(f"  Tesseract Path: {self.config.tesseract_path}\n")
+                    f.write(f"  Language: {self.config.ocr_language}\n")
+                    f.write(f"  PSM: {self.config.ocr_psm}\n")
+                    f.write(f"  OEM: {self.config.ocr_oem}\n")
+            except:
+                pass
+            
             error_msg = (
                 f"OCR failed with unexpected error:\n\n"
                 f"{type(e).__name__}: {str(e)}\n\n"
-                f"Please check testbuddy_activity.log for details"
+                f"Full error details saved to: tesseract_error_details.txt\n"
+                f"You can open this file to see the complete error message."
             )
             self.logger.log_ocr_error(str(e), type(e).__name__)
             self.finished.emit("", error_msg)
