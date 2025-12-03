@@ -11,8 +11,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (full history)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -41,46 +43,73 @@ jobs:
           Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
           .\build_windows.ps1 -CompileNSIS
 
-      - name: Upload EXE artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: TestBuddy-exe
-          path: dist/TestBuddy.exe
-
-      - name: Upload Installer artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: TestBuddy-installer
-          path: TestBuddy-Setup.exe
-
-      - name: Optional: Sign artifacts (if PFX secret provided)
-        if: ${{ secrets.SIGN_CERT_PFX != '' && secrets.SIGN_CERT_PASSWORD != '' }}
+      - name: Compute checksums for artifacts
         shell: powershell
         run: |
-          Write-Host "Writing PFX to file and attempting to sign artifacts..."
-          $pfxBase64 = '${{ secrets.SIGN_CERT_PFX }}'
-          [IO.File]::WriteAllBytes('cert.pfx', [Convert]::FromBase64String($pfxBase64))
-          choco install osslsigncode -y || Write-Host 'osslsigncode install may have failed'
+          $files = @()
+          if (Test-Path .\dist\TestBuddy.exe) { $files += Get-Item .\dist\TestBuddy.exe }
+          if (Test-Path .\dist\TestBuddy-signed.exe) { $files += Get-Item .\dist\TestBuddy-signed.exe }
+          if (Test-Path .\TestBuddy-Setup.exe) { $files += Get-Item .\TestBuddy-Setup.exe }
+          if (Test-Path .\TestBuddy-Setup-signed.exe) { $files += Get-Item .\TestBuddy-Setup-signed.exe }
+          if ($files.Count -eq 0) { Write-Host 'No build artifacts found to checksum.'; exit 0 }
+          $out = "CHECKSUMS.txt"
+          Remove-Item $out -ErrorAction SilentlyContinue
+          foreach ($f in $files) {
+            $sha = Get-FileHash -Algorithm SHA256 $f.FullName | Select-Object -ExpandProperty Hash
+            "$sha  $($f.Name)" | Out-File -FilePath $out -Encoding ascii -Append
+          }
+          Get-Content CHECKSUMS.txt
+
+      - name: Upload build artifacts and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestBuddy-artifacts
+          path: |
+            dist/TestBuddy*.exe
+            TestBuddy-Setup*.exe
+            CHECKSUMS.txt
+
+      - name: Optional: Sign artifacts (if PFX secret provided)
+        if: ${{ secrets.SIGN_CERT_PFX && secrets.SIGN_CERT_PASSWORD }}
+        shell: powershell
+        env:
+          PFX_BASE64: ${{ secrets.SIGN_CERT_PFX }}
+          PFX_PASS: ${{ secrets.SIGN_CERT_PASSWORD }}
+        run: |
+          Write-Host "Decoding PFX and writing to cert.pfx"
+          [IO.File]::WriteAllBytes('cert.pfx', [Convert]::FromBase64String($env:PFX_BASE64))
+          choco install osslsigncode -y || Write-Host 'osslsigncode may already be installed or install failed'
           if (Test-Path .\dist\TestBuddy.exe) {
-            Write-Host 'Signing dist\\TestBuddy.exe'
-            osslsigncode sign -pkcs12 cert.pfx -pass '${{ secrets.SIGN_CERT_PASSWORD }}' -n 'TestBuddy' -i 'http://testbuddy.local' -t 'http://timestamp.digicert.com' -in .\dist\TestBuddy.exe -out .\dist\TestBuddy-signed.exe || Write-Host 'Signing EXE failed'
+            $in = Resolve-Path .\dist\TestBuddy.exe
+            $out = Resolve-Path .\dist\TestBuddy-signed.exe
+            Write-Host "Signing $in -> $out"
+            osslsigncode sign -pkcs12 cert.pfx -pass $env:PFX_PASS -n 'TestBuddy' -i 'https://testbuddy.app' -t 'http://timestamp.digicert.com' -in $in -out $out
           }
           if (Test-Path .\TestBuddy-Setup.exe) {
-            Write-Host 'Signing TestBuddy-Setup.exe'
-            osslsigncode sign -pkcs12 cert.pfx -pass '${{ secrets.SIGN_CERT_PASSWORD }}' -n 'TestBuddy' -i 'http://testbuddy.local' -t 'http://timestamp.digicert.com' -in .\TestBuddy-Setup.exe -out .\TestBuddy-Setup-signed.exe || Write-Host 'Signing installer failed'
+            $in = Resolve-Path .\TestBuddy-Setup.exe
+            $out = Resolve-Path .\TestBuddy-Setup-signed.exe
+            Write-Host "Signing $in -> $out"
+            osslsigncode sign -pkcs12 cert.pfx -pass $env:PFX_PASS -n 'TestBuddy' -i 'https://testbuddy.app' -t 'http://timestamp.digicert.com' -in $in -out $out
           }
+
+      - name: Compute release tag
+        id: tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const date = new Date().toISOString().slice(0,10).replace(/-/g,'')
+            const tag = `v${date}-${process.env.GITHUB_RUN_NUMBER}`
+            return tag
 
       - name: Create GitHub release and attach artifacts
         uses: ncipollo/release-action@v1
         with:
-          tag: build-${{ github.run_number }}
-          name: TestBuddy build ${{ github.run_number }}
+          tag: ${{ steps.tag.outputs.result }}
+          name: TestBuddy ${{ steps.tag.outputs.result }}
           body: |
-            Automated build from commit ${{ github.sha }}
-            - Runner: ${{ runner.os }}
-            - Workflow: ${{ github.workflow }}
+            Automated build for commit ${{ github.sha }}
+            Artifacts include the executable(s) and installer. See attached CHECKSUMS.txt for SHA256 sums.
           files: |
             dist/TestBuddy*.exe
             TestBuddy-Setup*.exe
+            CHECKSUMS.txt
