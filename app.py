@@ -706,7 +706,6 @@ class MainWindow(QMainWindow):
             self.workbench.current_session_id = self.current_session.session_id
             self.workbench.current_session_name = self.current_session.name
             self.workbench.text_editor.clear()
-            self.workbench.image_viewer.setText("[Ready to capture]")
             self.workbench.status_label.setText(f"Session: {name}")
             self.stack.setCurrentWidget(self.workbench)
             safe_write_log(fmt_log("INFO", "New session created", f"name={name}, category={category}"))
