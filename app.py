@@ -446,30 +446,141 @@ class HomePage(QWidget):
 
 
 class Workbench(QWidget):
-    """Capture & edit workspace: image viewer + rich text editor."""
+    """Modern OCR workspace with clean layout."""
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
 
-        # PROMINENT CAPTURE BUTTON (Round, Blue, Large)
-        capture_layout = QHBoxLayout()
-        capture_layout.addStretch()
+        # Status bar at top
+        self.status_label = QLabel("Ready to capture")
+        self.status_label.setStyleSheet("""
+            QLabel {
+                font-size: 14px;
+                color: #666;
+                padding: 8px;
+            }
+        """)
+        layout.addWidget(self.status_label)
+
+        # Rich text toolbar (compact, modern)
+        fmt_toolbar = QHBoxLayout()
+        fmt_toolbar.setSpacing(5)
         
-        self.btn_capture = QPushButton("CAPTURE SCREENSHOT")
+        self.btn_bold = QPushButton("B")
+        self.btn_bold.setMaximumWidth(35)
+        self.btn_bold.setStyleSheet("""
+            QPushButton {
+                font-weight: bold;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 6px;
+                background: white;
+            }
+            QPushButton:hover {
+                background: #f0f0f0;
+            }
+        """)
+        self.btn_bold.setToolTip("Bold (Ctrl+B)")
+        
+        self.btn_italic = QPushButton("I")
+        self.btn_italic.setMaximumWidth(35)
+        self.btn_italic.setStyleSheet("""
+            QPushButton {
+                font-style: italic;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 6px;
+                background: white;
+            }
+            QPushButton:hover {
+                background: #f0f0f0;
+            }
+        """)
+        self.btn_italic.setToolTip("Italic (Ctrl+I)")
+        
+        self.btn_underline = QPushButton("U")
+        self.btn_underline.setMaximumWidth(35)
+        self.btn_underline.setStyleSheet("""
+            QPushButton {
+                text-decoration: underline;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 6px;
+                background: white;
+            }
+            QPushButton:hover {
+                background: #f0f0f0;
+            }
+        """)
+        self.btn_underline.setToolTip("Underline (Ctrl+U)")
+        
+        # Font size selector
+        self.font_size_combo = QComboBox()
+        self.font_size_combo.addItems(["10pt", "12pt", "14pt", "16pt", "18pt", "20pt", "24pt"])
+        self.font_size_combo.setCurrentText("14pt")
+        self.font_size_combo.setMaximumWidth(80)
+        self.font_size_combo.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 4px 8px;
+                background: white;
+            }
+        """)
+        
+        fmt_toolbar.addWidget(self.btn_bold)
+        fmt_toolbar.addWidget(self.btn_italic)
+        fmt_toolbar.addWidget(self.btn_underline)
+        fmt_toolbar.addSpacing(10)
+        fmt_toolbar.addWidget(QLabel("Size:"))
+        fmt_toolbar.addWidget(self.font_size_combo)
+        fmt_toolbar.addStretch()
+        layout.addLayout(fmt_toolbar)
+
+        # Text editor (large, clean)
+        self.text_editor = QTextEdit()
+        self.text_editor.setPlaceholderText("OCR text will appear here automatically...")
+        self.text_editor.setAcceptRichText(True)  # Enable rich text
+        self.text_editor.setStyleSheet("""
+            QTextEdit {
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 15px;
+                font-size: 14pt;
+                line-height: 1.6;
+                background: white;
+            }
+            QTextEdit:focus {
+                border: 2px solid #007AFF;
+            }
+        """)
+        layout.addWidget(self.text_editor)
+
+        # Bottom row: character count + action buttons
+        bottom_row = QHBoxLayout()
+        bottom_row.setSpacing(10)
+        
+        self.char_count_label = QLabel("0 characters")
+        self.char_count_label.setStyleSheet("color: #666; font-size: 12px;")
+        bottom_row.addWidget(self.char_count_label)
+        bottom_row.addStretch()
+        
+        # Action buttons (at bottom, modern style)
+        self.btn_capture = QPushButton("📷 Capture")
         self.btn_capture.setStyleSheet("""
             QPushButton {
                 background-color: #007AFF;
                 color: white;
                 border: none;
-                border-radius: 35px;
-                font-size: 16px;
-                font-weight: bold;
-                padding: 20px 40px;
-                min-width: 300px;
-                min-height: 70px;
+                border-radius: 6px;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 120px;
             }
             QPushButton:hover {
                 background-color: #0051D5;
@@ -478,87 +589,119 @@ class Workbench(QWidget):
                 background-color: #004BB8;
             }
         """)
-        capture_layout.addWidget(self.btn_capture)
-        capture_layout.addStretch()
-        layout.addLayout(capture_layout)
-        layout.addSpacing(15)
-
-        # Regular Toolbar (without emojis, no image controls)
-        toolbar = QHBoxLayout()
-        self.btn_undo = QPushButton("Undo")
-        self.btn_redo = QPushButton("Redo")
-        self.btn_clear = QPushButton("Clear")
+        
+        self.btn_clear = QPushButton("🗑️ Clear")
         self.btn_clear.setStyleSheet("""
             QPushButton {
                 background-color: #FF3B30;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-weight: bold;
+                border-radius: 6px;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 100px;
             }
             QPushButton:hover {
                 background-color: #D92D20;
             }
         """)
+        
+        self.btn_copy = QPushButton("📋 Copy All")
+        self.btn_copy.setStyleSheet("""
+            QPushButton {
+                background-color: #34C759;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 120px;
+            }
+            QPushButton:hover {
+                background-color: #2DA74A;
+            }
+        """)
+        
+        # Secondary action buttons
         self.btn_save = QPushButton("Save")
+        self.btn_save.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #007AFF;
+                border: 2px solid #007AFF;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #f0f8ff;
+            }
+        """)
+        
         self.btn_export = QPushButton("Export")
-        toolbar.addWidget(self.btn_undo)
-        toolbar.addWidget(self.btn_redo)
-        toolbar.addWidget(self.btn_clear)
-        toolbar.addSpacing(10)
-        toolbar.addWidget(self.btn_save)
-        toolbar.addWidget(self.btn_export)
-        toolbar.addStretch()
-        layout.addLayout(toolbar)
-
-        # Formatting toolbar (for text editing)
-        fmt_toolbar = QHBoxLayout()
-        self.btn_bold = QPushButton("B")
-        self.btn_bold.setMaximumWidth(30)
-        self.btn_bold.setToolTip("Bold (Ctrl+B)")
-        self.btn_italic = QPushButton("I")
-        self.btn_italic.setMaximumWidth(30)
-        self.btn_italic.setToolTip("Italic (Ctrl+I)")
-        self.btn_underline = QPushButton("U")
-        self.btn_underline.setMaximumWidth(30)
-        self.btn_underline.setToolTip("Underline (Ctrl+U)")
+        self.btn_export.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #007AFF;
+                border: 2px solid #007AFF;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #f0f8ff;
+            }
+        """)
         
-        fmt_toolbar.addWidget(QLabel("Format:"))
-        fmt_toolbar.addWidget(self.btn_bold)
-        fmt_toolbar.addWidget(self.btn_italic)
-        fmt_toolbar.addWidget(self.btn_underline)
-        fmt_toolbar.addSpacing(10)
+        self.btn_undo = QPushButton("↶ Undo")
+        self.btn_undo.setStyleSheet("""
+            QPushButton {
+                background-color: #f5f5f5;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #e8e8e8;
+            }
+        """)
         
-        # Font size selector
-        self.font_size_combo = QComboBox()
-        self.font_size_combo.addItems(["8pt", "10pt", "12pt", "14pt", "16pt", "18pt", "20pt"])
-        self.font_size_combo.setCurrentText("12pt")
-        self.font_size_combo.setMaximumWidth(80)
-        fmt_toolbar.addWidget(QLabel("Size:"))
-        fmt_toolbar.addWidget(self.font_size_combo)
+        self.btn_redo = QPushButton("↷ Redo")
+        self.btn_redo.setStyleSheet("""
+            QPushButton {
+                background-color: #f5f5f5;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #e8e8e8;
+            }
+        """)
         
-        fmt_toolbar.addStretch()
-        layout.addLayout(fmt_toolbar)
-
-        # Status
-        self.status_label = QLabel("Ready")
-        layout.addWidget(self.status_label)
-
-        # Text editor (full width, no image viewer)
-        self.text_editor = QTextEdit()
-        self.text_editor.setPlaceholderText("OCR result appears here. Edit as needed.")
-        self.text_editor.setAcceptRichText(False)  # Plain text only for OCR
-        layout.addWidget(self.text_editor)
-
-        # Character count
-        self.char_count_label = QLabel("0 characters")
-        layout.addWidget(self.char_count_label)
+        # Add buttons to layout
+        bottom_row.addWidget(self.btn_undo)
+        bottom_row.addWidget(self.btn_redo)
+        bottom_row.addSpacing(10)
+        bottom_row.addWidget(self.btn_save)
+        bottom_row.addWidget(self.btn_export)
+        bottom_row.addSpacing(20)
+        bottom_row.addWidget(self.btn_capture)
+        bottom_row.addWidget(self.btn_clear)
+        bottom_row.addWidget(self.btn_copy)
+        
+        layout.addLayout(bottom_row)
 
         # Current session metadata
         self.current_session_id: Optional[str] = None
         self.current_session_name: Optional[str] = None
-        self.current_image: Optional[object] = None  # PIL Image object
+        self.current_image: Optional[object] = None
 
         # Initialize undo/redo manager
         self.undo_redo = UndoRedoManager(self.text_editor, max_stack_size=100)
@@ -570,7 +713,7 @@ class Workbench(QWidget):
         """Update character count when text changes."""
         text = self.text_editor.toPlainText()
         char_count = len(text)
-        self.char_count_label.setText(f"{char_count} characters")
+        self.char_count_label.setText(f"{char_count:,} characters")
 
 
 class MainWindow(QMainWindow):
@@ -628,6 +771,7 @@ class MainWindow(QMainWindow):
         self.workbench.btn_undo.clicked.connect(self.on_undo)
         self.workbench.btn_redo.clicked.connect(self.on_redo)
         self.workbench.btn_clear.clicked.connect(self.on_clear_text)
+        self.workbench.btn_copy.clicked.connect(self.on_copy_all)
         
         # Formatting toolbar connections
         self.workbench.btn_bold.clicked.connect(self.on_format_bold)
@@ -724,6 +868,12 @@ class MainWindow(QMainWindow):
 
     def on_capture(self) -> None:
         activity_logger.log_ui_action("capture_button_clicked")
+        
+        # Auto-clear text if there's existing content
+        if self.workbench.text_editor.toPlainText().strip():
+            self.workbench.text_editor.clear()
+            logger.info("UI", "Auto-cleared text for new capture")
+        
         self.workbench.status_label.setText("Launching Snipping Tool...")
         safe_write_log(fmt_log("INFO", "Capture initiated"))
         activity_logger.info("CAPTURE", "Screenshot capture initiated")
@@ -905,6 +1055,29 @@ class MainWindow(QMainWindow):
         self.workbench.text_editor.clear()
         self.workbench.status_label.setText("Text cleared")
         logger.info("UI", "Text editor cleared")
+
+    def on_copy_all(self) -> None:
+        """Copy all text to clipboard."""
+        text = self.workbench.text_editor.toPlainText()
+        if not text.strip():
+            QMessageBox.information(self, "Copy All", "No text to copy!")
+            return
+        
+        try:
+            if pyperclip:
+                pyperclip.copy(text)
+                self.workbench.status_label.setText(f"Copied {len(text)} characters to clipboard")
+                logger.info("UI", f"Copied all text to clipboard: {len(text)} characters")
+            else:
+                # Fallback to Qt clipboard
+                clipboard = QApplication.clipboard()
+                if clipboard:
+                    clipboard.setText(text)
+                    self.workbench.status_label.setText(f"Copied {len(text)} characters")
+                    logger.info("UI", f"Copied all text: {len(text)} characters")
+        except Exception as e:
+            QMessageBox.warning(self, "Copy Failed", f"Failed to copy text: {str(e)}")
+            logger.error("UI", f"Copy all failed: {str(e)}")
 
     def on_format_bold(self) -> None:
         """Apply bold formatting to selected text."""
