@@ -25,7 +25,7 @@ from typing import Optional
 from uuid import uuid4
 
 from PyQt6.QtCore import Qt, QTimer, QSize, QThread, QObject, pyqtSignal
-from PyQt6.QtGui import QFont, QAction, QPixmap, QImage
+from PyQt6.QtGui import QFont, QAction, QPixmap, QImage, QTextListFormat, QTextBlockFormat
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -446,7 +446,7 @@ class HomePage(QWidget):
 
 
 class Workbench(QWidget):
-    """Modern OCR workspace with clean layout."""
+    """Modern OCR workspace - Clean & Fast."""
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -466,57 +466,52 @@ class Workbench(QWidget):
         """)
         layout.addWidget(self.status_label)
 
-        # Rich text toolbar (compact, modern)
+        # Rich text toolbar (NO EMOJIS, add bullet points)
         fmt_toolbar = QHBoxLayout()
         fmt_toolbar.setSpacing(5)
         
-        self.btn_bold = QPushButton("B")
-        self.btn_bold.setMaximumWidth(35)
-        self.btn_bold.setStyleSheet("""
+        # Formatting buttons (clean style)
+        btn_style = """
             QPushButton {
-                font-weight: bold;
                 border: 1px solid #ddd;
                 border-radius: 4px;
-                padding: 6px;
+                padding: 6px 10px;
                 background: white;
+                min-width: 32px;
             }
             QPushButton:hover {
                 background: #f0f0f0;
+                border-color: #007AFF;
             }
-        """)
-        self.btn_bold.setToolTip("Bold (Ctrl+B)")
+            QPushButton:checked {
+                background: #007AFF;
+                color: white;
+                border-color: #007AFF;
+            }
+        """
+        
+        self.btn_bold = QPushButton("B")
+        self.btn_bold.setCheckable(True)
+        self.btn_bold.setStyleSheet(btn_style + "font-weight: bold;")
+        self.btn_bold.setToolTip("Bold")
         
         self.btn_italic = QPushButton("I")
-        self.btn_italic.setMaximumWidth(35)
-        self.btn_italic.setStyleSheet("""
-            QPushButton {
-                font-style: italic;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                padding: 6px;
-                background: white;
-            }
-            QPushButton:hover {
-                background: #f0f0f0;
-            }
-        """)
-        self.btn_italic.setToolTip("Italic (Ctrl+I)")
+        self.btn_italic.setCheckable(True)
+        self.btn_italic.setStyleSheet(btn_style + "font-style: italic;")
+        self.btn_italic.setToolTip("Italic")
         
         self.btn_underline = QPushButton("U")
-        self.btn_underline.setMaximumWidth(35)
-        self.btn_underline.setStyleSheet("""
-            QPushButton {
-                text-decoration: underline;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                padding: 6px;
-                background: white;
-            }
-            QPushButton:hover {
-                background: #f0f0f0;
-            }
-        """)
-        self.btn_underline.setToolTip("Underline (Ctrl+U)")
+        self.btn_underline.setCheckable(True)
+        self.btn_underline.setStyleSheet(btn_style + "text-decoration: underline;")
+        self.btn_underline.setToolTip("Underline")
+        
+        self.btn_bullet = QPushButton("• List")
+        self.btn_bullet.setStyleSheet(btn_style)
+        self.btn_bullet.setToolTip("Bullet List")
+        
+        self.btn_numbered = QPushButton("1. List")
+        self.btn_numbered.setStyleSheet(btn_style)
+        self.btn_numbered.setToolTip("Numbered List")
         
         # Font size selector
         self.font_size_combo = QComboBox()
@@ -535,6 +530,9 @@ class Workbench(QWidget):
         fmt_toolbar.addWidget(self.btn_bold)
         fmt_toolbar.addWidget(self.btn_italic)
         fmt_toolbar.addWidget(self.btn_underline)
+        fmt_toolbar.addSpacing(10)
+        fmt_toolbar.addWidget(self.btn_bullet)
+        fmt_toolbar.addWidget(self.btn_numbered)
         fmt_toolbar.addSpacing(10)
         fmt_toolbar.addWidget(QLabel("Size:"))
         fmt_toolbar.addWidget(self.font_size_combo)
@@ -560,27 +558,45 @@ class Workbench(QWidget):
         """)
         layout.addWidget(self.text_editor)
 
-        # Bottom row: character count + action buttons
+        # Bottom row: character count + centered action buttons
         bottom_row = QHBoxLayout()
-        bottom_row.setSpacing(10)
+        bottom_row.setSpacing(20)
         
         self.char_count_label = QLabel("0 characters")
         self.char_count_label.setStyleSheet("color: #666; font-size: 12px;")
         bottom_row.addWidget(self.char_count_label)
         bottom_row.addStretch()
         
-        # Action buttons (at bottom, modern style)
-        self.btn_capture = QPushButton("📷 Capture")
+        # Clear button (smaller, left side)
+        self.btn_clear = QPushButton("Clear")
+        self.btn_clear.setFixedSize(90, 60)
+        self.btn_clear.setStyleSheet("""
+            QPushButton {
+                background-color: #FF3B30;
+                color: white;
+                border: none;
+                border-radius: 30px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #D92D20;
+            }
+        """)
+        bottom_row.addWidget(self.btn_clear)
+        
+        # Capture button (BIG CIRCULAR - CENTER)
+        self.btn_capture = QPushButton("CAPTURE")
+        self.btn_capture.setFixedSize(160, 160)
         self.btn_capture.setStyleSheet("""
             QPushButton {
                 background-color: #007AFF;
                 color: white;
                 border: none;
-                border-radius: 6px;
-                padding: 12px 24px;
-                font-size: 14px;
-                font-weight: 600;
-                min-width: 120px;
+                border-radius: 80px;
+                font-size: 18px;
+                font-weight: bold;
+                letter-spacing: 1.5px;
             }
             QPushButton:hover {
                 background-color: #0051D5;
@@ -589,112 +605,27 @@ class Workbench(QWidget):
                 background-color: #004BB8;
             }
         """)
+        bottom_row.addWidget(self.btn_capture)
         
-        self.btn_clear = QPushButton("🗑️ Clear")
-        self.btn_clear.setStyleSheet("""
-            QPushButton {
-                background-color: #FF3B30;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 12px 24px;
-                font-size: 14px;
-                font-weight: 600;
-                min-width: 100px;
-            }
-            QPushButton:hover {
-                background-color: #D92D20;
-            }
-        """)
-        
-        self.btn_copy = QPushButton("📋 Copy All")
+        # Copy All button (smaller, right side)
+        self.btn_copy = QPushButton("Copy All")
+        self.btn_copy.setFixedSize(90, 60)
         self.btn_copy.setStyleSheet("""
             QPushButton {
                 background-color: #34C759;
                 color: white;
                 border: none;
-                border-radius: 6px;
-                padding: 12px 24px;
-                font-size: 14px;
+                border-radius: 30px;
+                font-size: 13px;
                 font-weight: 600;
-                min-width: 120px;
             }
             QPushButton:hover {
                 background-color: #2DA74A;
             }
         """)
-        
-        # Secondary action buttons
-        self.btn_save = QPushButton("Save")
-        self.btn_save.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #007AFF;
-                border: 2px solid #007AFF;
-                border-radius: 6px;
-                padding: 10px 20px;
-                font-size: 13px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #f0f8ff;
-            }
-        """)
-        
-        self.btn_export = QPushButton("Export")
-        self.btn_export.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #007AFF;
-                border: 2px solid #007AFF;
-                border-radius: 6px;
-                padding: 10px 20px;
-                font-size: 13px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #f0f8ff;
-            }
-        """)
-        
-        self.btn_undo = QPushButton("↶ Undo")
-        self.btn_undo.setStyleSheet("""
-            QPushButton {
-                background-color: #f5f5f5;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #e8e8e8;
-            }
-        """)
-        
-        self.btn_redo = QPushButton("↷ Redo")
-        self.btn_redo.setStyleSheet("""
-            QPushButton {
-                background-color: #f5f5f5;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #e8e8e8;
-            }
-        """)
-        
-        # Add buttons to layout
-        bottom_row.addWidget(self.btn_undo)
-        bottom_row.addWidget(self.btn_redo)
-        bottom_row.addSpacing(10)
-        bottom_row.addWidget(self.btn_save)
-        bottom_row.addWidget(self.btn_export)
-        bottom_row.addSpacing(20)
-        bottom_row.addWidget(self.btn_capture)
-        bottom_row.addWidget(self.btn_clear)
         bottom_row.addWidget(self.btn_copy)
+        
+        bottom_row.addStretch()
         
         layout.addLayout(bottom_row)
 
@@ -766,10 +697,6 @@ class MainWindow(QMainWindow):
         self.home_page.full_list.itemDoubleClicked.connect(self.open_session_from_item)
 
         self.workbench.btn_capture.clicked.connect(self.on_capture)
-        self.workbench.btn_save.clicked.connect(self.on_save_session)
-        self.workbench.btn_export.clicked.connect(self.on_export_session)
-        self.workbench.btn_undo.clicked.connect(self.on_undo)
-        self.workbench.btn_redo.clicked.connect(self.on_redo)
         self.workbench.btn_clear.clicked.connect(self.on_clear_text)
         self.workbench.btn_copy.clicked.connect(self.on_copy_all)
         
@@ -777,6 +704,8 @@ class MainWindow(QMainWindow):
         self.workbench.btn_bold.clicked.connect(self.on_format_bold)
         self.workbench.btn_italic.clicked.connect(self.on_format_italic)
         self.workbench.btn_underline.clicked.connect(self.on_format_underline)
+        self.workbench.btn_bullet.clicked.connect(self.on_bullet_list)
+        self.workbench.btn_numbered.clicked.connect(self.on_numbered_list)
         self.workbench.font_size_combo.currentTextChanged.connect(self.on_font_size_changed)
 
         # Keyboard shortcuts
@@ -794,6 +723,7 @@ class MainWindow(QMainWindow):
         if menubar is None:
             return
 
+        # File menu
         file_menu = menubar.addMenu("File")
         if file_menu is None:
             return
@@ -806,11 +736,31 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self.save_action)
         self.save_action.triggered.connect(self.on_save_session)
 
+        self.export_action = QAction("Export...", self)
+        file_menu.addAction(self.export_action)
+        self.export_action.triggered.connect(self.on_export_session)
+
         file_menu.addSeparator()
         exit_action = QAction("Exit", self)
         file_menu.addAction(exit_action)
         exit_action.triggered.connect(self.close)
 
+        # Edit menu (Undo/Redo)
+        edit_menu = menubar.addMenu("Edit")
+        if edit_menu is None:
+            return
+        
+        self.undo_action = QAction("Undo", self)
+        self.undo_action.setShortcut("Ctrl+Z")
+        edit_menu.addAction(self.undo_action)
+        self.undo_action.triggered.connect(self.on_undo)
+
+        self.redo_action = QAction("Redo", self)
+        self.redo_action.setShortcut("Ctrl+Y")
+        edit_menu.addAction(self.redo_action)
+        self.redo_action.triggered.connect(self.on_redo)
+
+        # View menu
         view_menu = menubar.addMenu("View")
         if view_menu is None:
             return
@@ -869,10 +819,13 @@ class MainWindow(QMainWindow):
     def on_capture(self) -> None:
         activity_logger.log_ui_action("capture_button_clicked")
         
-        # Auto-clear text if there's existing content
+        # Auto-clear text AND undo history (prevents glitch)
         if self.workbench.text_editor.toPlainText().strip():
+            self.workbench.text_editor.blockSignals(True)  # Prevent undo tracking
             self.workbench.text_editor.clear()
-            logger.info("UI", "Auto-cleared text for new capture")
+            self.workbench.text_editor.document().clearUndoRedoStacks()  # Clear history
+            self.workbench.text_editor.blockSignals(False)
+            logger.info("UI", "Auto-cleared text and history for new capture")
         
         self.workbench.status_label.setText("Launching Snipping Tool...")
         safe_write_log(fmt_log("INFO", "Capture initiated"))
@@ -1117,6 +1070,54 @@ class MainWindow(QMainWindow):
             self.workbench.status_label.setText(f"Font size: {size}pt")
         except ValueError:
             pass
+
+    def on_bullet_list(self) -> None:
+        """Toggle bullet list formatting."""
+        cursor = self.workbench.text_editor.textCursor()
+        current_list = cursor.currentList()
+        
+        if current_list:
+            # Remove list formatting
+            cursor.setBlockFormat(QTextBlockFormat())
+        else:
+            # Add bullet list
+            list_format = QTextListFormat()
+            list_format.setStyle(QTextListFormat.Style.ListDisc)
+            cursor.createList(list_format)
+        
+        logger.info("UI", "Text formatting: Bullet list toggled")
+        self.workbench.status_label.setText("Bullet list toggled")
+
+    def on_numbered_list(self) -> None:
+        """Toggle numbered list formatting."""
+        cursor = self.workbench.text_editor.textCursor()
+        current_list = cursor.currentList()
+        
+        if current_list:
+            # Remove list formatting
+            cursor.setBlockFormat(QTextBlockFormat())
+        else:
+            # Add numbered list
+            list_format = QTextListFormat()
+            list_format.setStyle(QTextListFormat.Style.ListDecimal)
+            cursor.createList(list_format)
+        
+        logger.info("UI", "Text formatting: Numbered list toggled")
+        self.workbench.status_label.setText("Numbered list toggled")
+
+    def on_undo(self) -> None:
+        """Undo last text change."""
+        if self.workbench.undo_redo.can_undo():
+            self.workbench.undo_redo.undo()
+            logger.info("UI", "Text editing: Undo performed")
+            self.workbench.status_label.setText("Undo")
+
+    def on_redo(self) -> None:
+        """Redo last undone change."""
+        if self.workbench.undo_redo.can_redo():
+            self.workbench.undo_redo.redo()
+            logger.info("UI", "Text editing: Redo performed")
+            self.workbench.status_label.setText("Redo")
 
     def go_home(self) -> None:
         self.load_sessions_to_home()
